@@ -1,10 +1,10 @@
 #!/bin/bash
 
 set -e
-set -x
 
 if [ -z ${hypervisor} ]; then
   echo \$hypervisor ip address needs to be set
+  echo preferrably this ends is in .1
   exit
 fi
 
@@ -39,7 +39,7 @@ end_dhcp=$(echo ${hypervisor} | awk -F. '{print $1"."$2"."$3}').$(($(echo ${hype
   --dhcp-no-override \
   --dhcp-boot=pxelinux.0 \
   --conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig \
-  --log-dhcp
+  --log-dhcp &
 /usr/bin/python3 -m http.server --directory ${tftp_path} 8000 &
 
 while true; do
