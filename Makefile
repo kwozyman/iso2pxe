@@ -9,7 +9,7 @@ run:
 	  --detach \
 	  --rm \
 	  --privileged --network=host \
-	  --env hypervisor=192.168.125.1 \
+	  --env hypervisor=192.168.126.1 \
 	  --volume ${PWD}/iso/:/data/iso/:ro,z \
 	  iso2pxe
 	podman logs --follow iso2pxe
