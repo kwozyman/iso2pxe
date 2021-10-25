@@ -12,9 +12,10 @@ webserver=${hypervisor}:8000
 pxe_mount=/tmp/mnt
 tftp_path=/tftpboot
 iso_paths=/data/iso
-cp /boot/efi/EFI/BOOT/BOOTX64.EFI ${tftp_path}
+cp /boot/efi/EFI/fedora/shimx64.efi /boot/efi/EFI/fedora/grubx64.efi ${tftp_path}/uefi
+chmod 777 ${tftp_path}/uefi/*
 cp /data/pxelinux.cfg ${tftp_path}/pxelinux.cfg/default
-cp /data/grub.cfg ${tftp_path}/grub.cfg
+cp /data/grub.cfg ${tftp_path}/uefi/grub.cfg
 for iso in $(find ${iso_paths} -name '*.iso'); do
   isoname=$(basename $iso | sed -e 's/.iso//g')
   mkdir -p ${tftp_path}/${isoname}
@@ -27,10 +28,10 @@ for iso in $(find ${iso_paths} -name '*.iso'); do
   echo "LABEL ${isoname}" >> ${tftp_path}/pxelinux.cfg/default
   echo "  KERNEL ${isoname}/vmlinuz" >> ${tftp_path}/pxelinux.cfg/default
   echo "  APPEND initrd=${isoname}/initrd.img,${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/ignition.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/pxelinux.cfg/default
-  echo "menuentry '${isoname}' {" >> ${tftp_path}/grub.cfg
-  echo "  linuxefi ${isoname}/vmlinuz" >> ${tftp_path}/grub.cfg
-  echo "  initrdefi ${isoname}/initrd.img,${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/ignition.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/grub.cfg
-  echo "}" >> ${tftp_path}/grub.cfg
+  echo "menuentry '${isoname}' {" >> ${tftp_path}/uefi/grub.cfg
+  echo "  linux ${isoname}/vmlinuz coreos.live.rootfs_url=http://${webserver}/${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/ignition.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/uefi/grub.cfg
+  echo "  initrd ${isoname}/initrd.img" >> ${tftp_path}/uefi/grub.cfg
+  echo "}" >> ${tftp_path}/uefi/grub.cfg
 done
 
 start_dhcp=$(echo ${hypervisor} | awk -F. '{print $1"."$2"."$3}').$(($(echo ${hypervisor} | awk -F. '{print $4}') + 1))
@@ -46,7 +47,7 @@ end_dhcp=$(echo ${hypervisor} | awk -F. '{print $1"."$2"."$3}').$(($(echo ${hype
   --dhcp-match=set:efi-x86_64,option:client-arch,9 \
   --dhcp-match=set:efi-x86,option:client-arch,6 \
   --dhcp-match=set:bios,option:client-arch,0 \
-  --dhcp-boot=tag:efi-x86_64,BOOTX64.efi \
+  --dhcp-boot=tag:efi-x86_64,uefi/shimx64.efi \
   --dhcp-boot=tag:bios,pxelinux.0 \
   --conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig \
   --log-dhcp \
