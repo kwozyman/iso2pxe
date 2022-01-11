@@ -9,6 +9,7 @@ if [ -z ${hypervisor} ]; then
 fi
 
 webserver=${hypervisor}:8000
+bind_interface=${interface:-*}
 pxe_mount=/tmp/mnt
 tftp_path=/tftpboot
 iso_paths=/data/iso
@@ -50,6 +51,7 @@ end_dhcp=$(echo ${hypervisor} | awk -F. '{print $1"."$2"."$3}').$(($(echo ${hype
   --dhcp-boot=tag:efi-x86_64,uefi/shimx64.efi \
   --dhcp-boot=tag:bios,pxelinux.0 \
   --conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig \
+  --interface ${bind_interface} -z \
   --log-dhcp \
   --listen-address=${hypervisor} &
 /usr/bin/python3 -m http.server --directory ${tftp_path} 8000 &
