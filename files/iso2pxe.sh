@@ -23,14 +23,12 @@ for iso in $(find ${iso_paths} -name '*.iso'); do
   7z e ${iso} -o${tftp_path}/${isoname} images/pxeboot/vmlinuz
   7z e ${iso} -o${tftp_path}/${isoname} images/pxeboot/initrd.img
   7z e ${iso} -o${tftp_path}/${isoname} images/pxeboot/rootfs.img
-  7z e ${iso} -o${tftp_path}/${isoname} images/ignition.img
-  cat ${tftp_path}/${isoname}/ignition.img | gunzip | \
-    sed "s/.*config.ign.*/{/" | sed "s/.*TRAILER.*/}/" > ${tftp_path}/${isoname}/ignition.ign
+  7z e ${iso} -so images/ignition.img | gzip -dc | cpio -ivD ${tftp_path}/${isoname}
   echo "LABEL ${isoname}" >> ${tftp_path}/pxelinux.cfg/default
   echo "  KERNEL ${isoname}/vmlinuz" >> ${tftp_path}/pxelinux.cfg/default
-  echo "  APPEND initrd=${isoname}/initrd.img,${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/ignition.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/pxelinux.cfg/default
+  echo "  APPEND initrd=${isoname}/initrd.img,${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/config.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/pxelinux.cfg/default
   echo "menuentry '${isoname}' {" >> ${tftp_path}/uefi/grub.cfg
-  echo "  linux ${isoname}/vmlinuz coreos.live.rootfs_url=http://${webserver}/${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/ignition.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/uefi/grub.cfg
+  echo "  linux ${isoname}/vmlinuz coreos.live.rootfs_url=http://${webserver}/${isoname}/rootfs.img ignition.config.url=http://${webserver}/${isoname}/config.ign ignition.firstboot ignition.platform.id=metal" >> ${tftp_path}/uefi/grub.cfg
   echo "  initrd ${isoname}/initrd.img" >> ${tftp_path}/uefi/grub.cfg
   echo "}" >> ${tftp_path}/uefi/grub.cfg
 done
