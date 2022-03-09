@@ -1,5 +1,14 @@
 FROM fedora
-RUN dnf install -y jq dnsmasq syslinux-tftpboot findutils p7zip-plugins procps-ng sed shim-x64
+RUN dnf install -y \
+    dnsmasq \
+    findutils \
+    ipxe-bootimgs \
+    jq \
+    p7zip-plugins \
+    procps-ng \
+    sed \
+    shim-x64 \
+    syslinux-tftpboot
 RUN mkdir -p /data/iso /tmp/mnt /tftpboot/pxelinux.cfg /tftpboot/uefi
 
 ADD files/pxelinux.cfg /data/pxelinux.cfg
