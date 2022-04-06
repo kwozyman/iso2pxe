@@ -8,7 +8,9 @@ if [ -z ${hypervisor} ]; then
   exit
 fi
 
-webserver=${hypervisor}:8000
+dnsmasq_port=${dnsmasq_port:-53}
+webserver_port=${webserver_port:-8000}
+webserver=${hypervisor}:${webserver_port}
 bind_interface=${interface:-*}
 pxe_mount=/tmp/mnt
 tftp_path=/tftpboot
@@ -60,8 +62,9 @@ end_dhcp=$(echo ${hypervisor} | awk -F. '{print $1"."$2"."$3}').$(($(echo ${hype
   --conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig \
   --interface "${bind_interface}" -z \
   --log-dhcp \
+  --port ${dnsmasq_port} \
   --listen-address=${hypervisor} &
-/usr/bin/python3 -m http.server --directory ${tftp_path} 8000 &
+/usr/bin/python3 -m http.server --directory ${tftp_path} ${webserver_port} &
 
 while true; do
   pgrep dnsmasq > /dev/null
